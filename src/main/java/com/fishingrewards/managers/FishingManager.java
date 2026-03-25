@@ -2,6 +2,7 @@ package com.fishingrewards.managers;
 
 import com.fishingrewards.FishingRewards;
 import com.fishingrewards.PluginLogger;
+import com.fishingrewards.api.TreasureBoostEvent;
 import com.fishingrewards.rewards.FishingReward;
 import com.fishingrewards.rewards.RewardAttribute;
 import com.fishingrewards.rewards.SpawnedReward;
@@ -98,6 +99,10 @@ public class FishingManager implements Listener {
         double luckMultiplier = ((configManager.getLuckIncrease()/100)*(luckLevel))+1;
         double luckDividier = ((configManager.getLuckDecrease()/100)*(luckLevel))+1;
 
+        TreasureBoostEvent treasureBoostEvent = new TreasureBoostEvent(player);
+        plugin.getServer().getPluginManager().callEvent(treasureBoostEvent);
+        double treasureBoostMultiplier = treasureBoostEvent.getMultiplier();
+
         for(FishingReward reward : rewardManager.getRewardsList()){
             boolean add = true;
             if(configManager.isWorldGuardEnabled()) {
@@ -156,6 +161,7 @@ public class FishingManager implements Listener {
                     if (reward.isTreasure()) currentWeight *= luckMultiplier;
                     if (reward.isJunk()) currentWeight /= luckDividier;
                 }
+                if(reward.isTreasure()) currentWeight *= treasureBoostMultiplier;
                 totalWeight+=currentWeight;
             }
         }
@@ -171,6 +177,7 @@ public class FishingManager implements Listener {
                         if(reward.isTreasure()) weight *= luckMultiplier;
                         if(reward.isJunk()) weight /= luckDividier;
                     }
+                    if(reward.isTreasure()) weight *= treasureBoostMultiplier;
                     cumulativeWeight+=weight;
                     if(rollWeight < cumulativeWeight){
                         attachToRod(e, reward);
